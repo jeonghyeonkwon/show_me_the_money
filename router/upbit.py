@@ -1,4 +1,5 @@
 import requests
+
 from fastapi import APIRouter, Depends
 from models.coin import Coin
 from repository.coin_repository import CoinRepository

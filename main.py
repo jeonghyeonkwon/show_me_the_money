@@ -6,6 +6,7 @@ from util.util import UtilService
 from router.naver import router as naver_router
 from router.upbit import router as upbit_router
 from router.candle import router as candle_router
+from router.candle_test import router as candle_test_router
 from dtos.user_response import UserResponse
 from dtos.user_request import LogInRequest, ReqAccessDto
 from models.user import User, UserAccessLog
@@ -80,8 +81,17 @@ def main():
 
 
 if __name__ == "__main__":
+    directory = ["./graph/candle"]
+    print(os.path)
+
+    for p in directory:
+        if not os.path.exists(p):
+            os.makedirs(p)
+
     main()
+
 
 app.include_router(naver_router, prefix="/naver")
 app.include_router(upbit_router, prefix="/upbit")
 app.include_router(candle_router, prefix="/candle")
+app.include_router(candle_test_router, prefix="/candle-test")

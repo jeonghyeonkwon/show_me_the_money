@@ -40,7 +40,7 @@ async def show_graph(candle_repo: CandleRepository = Depends()):
                 obj.high_price,
                 obj.low_price,
                 obj.trade_price,
-                obj.volumn,
+                obj.volume,
             ]
         )
 
@@ -55,14 +55,25 @@ async def show_graph(candle_repo: CandleRepository = Depends()):
         mav=(2, 4, 6),
         ylabel="ohlc candle",
         datetime_format="%Y-%m-%d",
-        y_on_right=False,
+        yscale="linear",
     )
 
-    mc = mpf.make_marketcolors(up="r", down="b", inherit=True)
-    s = mpf.make_mpf_style(marketcolors=mc)
-    mpf.plot(df, **kwargs, style=s, savefig="testsave.png")
-    # mpf.plot(df, savefig="testsave.png")
+    mc = mpf.make_marketcolors(
+        up="r",
+        down="b",
+        inherit=True,
+    )
+    s = mpf.make_mpf_style(
+        marketcolors=mc,
+    )
 
-    print(df)
+    mpf.plot(
+        df,
+        **kwargs,
+        style=s,
+        savefig="testsave.png",
+    )
+
+    # mpf.plot(df, savefig="testsave.png")
 
     return month_list

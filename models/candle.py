@@ -15,7 +15,7 @@ class MonthCandle(Base):
     high_price = Column(Float, nullable=False)
     low_price = Column(Float, nullable=False)
     trade_price = Column(Float, nullable=False)
-    volumn = Column(Float, nullable=False)
+    volume = Column(Float, nullable=False)
     coin_type = Column(String(10), nullable=False)
 
     @classmethod
@@ -27,7 +27,7 @@ class MonthCandle(Base):
         high_price: float,
         low_price: float,
         trade_price: float,
-        volumn: float,
+        volume: float,
     ):
         coin_type = market.split("-")[0]
         return cls(
@@ -37,6 +37,6 @@ class MonthCandle(Base):
             high_price=high_price,
             low_price=low_price,
             trade_price=trade_price,
-            volumn=volumn,
+            volume=volume,
             coin_type=coin_type,
         )

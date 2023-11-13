@@ -12,6 +12,11 @@ class UtilService:
     def get_time() -> datetime:
         return datetime.now(timezone("Asia/Seoul"))
 
+    def get_time_kor() -> str:
+        now = datetime.now()
+        date_string = now.strftime("%Y년%m월%d일%H시%M분%S초")
+        return date_string
+
     def init_user(self):
         hassed_password: bytes = bcrypt.hashpw(
             settings.init_pwd.encode(self.encoding), salt=bcrypt.gensalt()

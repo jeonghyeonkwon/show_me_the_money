@@ -15,7 +15,7 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True)
 # SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 SessionFactory = sessionmaker(bind=engine)
 
-from models import coin, slack, user, candle
+from models import coin, slack, user, candle, graph_file
 
 
 Base.metadata.create_all(bind=engine)

@@ -1,20 +1,29 @@
+from fastapi import Depends
 import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import timedelta
 from mpl_finance import candlestick_ohlc
 import matplotlib.dates as mdates
+from util.util import UtilService
+from setting import settings
+from models.enum import GraphType
+from models.graph_file import GraphFile
+from repository.graph_repository import GraphRepository
+
+GRAPH_PATH = settings.graph_path
 
 
 # 히스토그램 그래프 그리기
-def draw_hist(dt, bins):
+def draw_hist(dt, bins, graphRepo):
     plt.hist(dt, bins=bins)
 
     plt.grid(True)
+    file_path = f"{GRAPH_PATH}/hist/hist_{UtilService.get_time_kor()}.png"
 
-    plt.savefig("./graph/hist.png")
+    plt.savefig(file_path)
 
 
-# 히스토그램 그래프 그리기
+# 누적합 그래프 그리기
 def draw_acc(df):
     # print(df.index)
     new_index = []
@@ -44,8 +53,8 @@ def draw_acc(df):
     plt.legend(loc="best")
     # plt.figure(figsize=(50, 50))
     # print(plt.gcf())
-
-    plt.savefig("./graph/acc.png")
+    file_path = f"{GRAPH_PATH}/acc/acc_{UtilService.get_time_kor()}.png"
+    plt.savefig(file_path)
 
 
 # MDD 그리기
@@ -69,7 +78,8 @@ def draw_mdd(df):
     plt.subplot(212)
     drawdown.plot(c="blue", label="BTC DD", grid=True, legend=True)
     max_dd.plot(c="red", label="BTC MDD", grid=True, legend=True)
-    plt.savefig("./graph/mdd.png")
+    file_path = f"{GRAPH_PATH}/mdd/mdd_{UtilService.get_time_kor()}.png"
+    plt.savefig(file_path)
 
 
 # 볼린저 밴드
@@ -173,11 +183,12 @@ def draw_bollinger_band(df):
 
     plt.legend(loc="best")
 
-    plt.savefig("./graph/bollinger.png")
+    file_path = f"{GRAPH_PATH}/bollinger/bollinger_{UtilService.get_time_kor()}.png"
+    plt.savefig(file_path)
 
 
 # 삼중창 1
-def spear1(df):
+def spear1(df, graphRepo):
     print(df)
     ema60 = df.Close.ewm(span=60).mean()  # 주식의 12주 치수 이동평균
     ema130 = df.Close.ewm(span=130).mean()  # 주식의 26주 치수 이동평균
@@ -192,26 +203,59 @@ def spear1(df):
 
     ohlc = df[["number", "Open", "High", "Low", "Close"]]
 
-    plt.figure(figsize=(9, 7))
+    ndays_high = df.High.rolling(window=13, min_periods=1).max()
+    ndays_low = df.Low.rolling(window=14, min_periods=1).min()
+    fast_k = (df.Close - ndays_low) / (ndays_high - ndays_low) * 100
+    slow_d = fast_k.rolling(window=3).mean()
+    df = df.assign(fast_k=fast_k, slow_d=slow_d).dropna()
 
-    p1 = plt.subplot(2, 1, 1)
-    plt.title("BTC")
+    plt.figure(figsize=(9, 12))
 
+    p1 = plt.subplot(3, 1, 1)
     plt.grid(True)
-
-    candlestick_ohlc(p1, ohlc.values, width=0.6, colorup="red", colordown="blue")
     p1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-
-    plt.plot(df.number, df["ema130"], color="c", label="EMA130")
-
-    plt.legend(loc="best")
-
-    p2 = plt.subplot(2, 1, 2)
-    plt.grid(True)
-    p2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     plt.bar(df.number, df["macdhist"], color="m", label="MACD-Hist")
     plt.plot(df.number, df["macd"], color="b", label="MACD")
     plt.plot(df.number, df["signal"], "g--", label="MACD-Signal")
     plt.legend(loc="best")
-    plt.savefig("./graph/spear.png")
-    print(ohlc)
+
+    p2 = plt.subplot(3, 1, 2)
+    plt.title("BTC")
+
+    plt.grid(True)
+
+    candlestick_ohlc(p2, ohlc.values, width=0.6, colorup="red", colordown="blue")
+    p2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+
+    plt.plot(df.number, df["ema130"], color="c", label="EMA130")
+    for i in range(1, len(df.Close)):
+        if (
+            df.ema130.values[i - 1] < df.ema130.values[i]
+            and df.slow_d.values[i - 1] >= 20
+            and df.slow_d.values[i] < 20
+        ):
+            plt.plot(df.number.values[i], 25000000, "r^")
+        elif (
+            df.ema130.values[i - 1] > df.ema130.values[i]
+            and df.slow_d.values[i - 1] <= 80
+            and df.slow_d.values[i] > 80
+        ):
+            plt.plot(df.number.values[i], 25000000, "bv")
+
+    plt.legend(loc="best")
+
+    p3 = plt.subplot(3, 1, 3)
+
+    plt.grid(True)
+    p3.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    plt.plot(df.number, df["fast_k"], color="c", label="%K")
+    plt.plot(df.number, df["slow_d"], color="k", label="%D")
+    plt.yticks([0, 20, 80, 100])
+    plt.legend(loc="best")
+
+    file_path = f"{GRAPH_PATH}/spear/spear_{UtilService.get_time_kor()}.png"
+
+    graph_file: GraphFile = GraphFile.create(GraphType.SPEAR, file_path)
+    graphRepo.insert_graph(graph_file=graph_file)
+
+    plt.savefig(file_path)

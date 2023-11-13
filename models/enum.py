@@ -28,3 +28,12 @@ class CandleType(Enum):
     MONTH = "months"
     WEEK = "weeks"
     DAY = "days"
+
+
+class GraphType(Enum):
+    ACC = "acc"
+    BOLLINGER = "bollinger"
+    CANDLE = "candle"
+    HIST = "hist"
+    MDD = "mdd"
+    SPEAR = "spear"

@@ -6,6 +6,7 @@ import mplfinance as mpf
 import matplotlib as mpdatas
 from util.spring_test import spring_candle_dataframe
 from util.graph import draw_hist, draw_acc, draw_mdd, draw_bollinger_band, spear1
+from repository.graph_repository import GraphRepository
 
 router = APIRouter()
 
@@ -80,11 +81,11 @@ async def show_graph_test():
 
 
 @router.get("/graph-day")
-async def show_graph_test():
+async def show_graph_test(graphRepo: GraphRepository = Depends()):
     sorted_df = spring_candle_dataframe(SPRING_API_TEST_DAY, headers)
     print(sorted_df)
     sec_dpc = (sorted_df["Close"] / sorted_df["Close"].shift(1) - 1) * 100
     sec_dpc.iloc[0] = 0
     # print(sec_dpc)
-    spear1(sorted_df)
+    spear1(sorted_df, graphRepo)
     return "response"

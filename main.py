@@ -81,7 +81,15 @@ def main():
 
 
 if __name__ == "__main__":
-    directory = ["./graph/candle"]
+    # directory = ["./graph/candle"]
+    directory = [
+        f"{settings.graph_path}/candle",
+        f"{settings.graph_path}/acc",
+        f"{settings.graph_path}/bollinger",
+        f"{settings.graph_path}/hist",
+        f"{settings.graph_path}/mdd",
+        f"{settings.graph_path}/spear",
+    ]
     print(os.path)
 
     for p in directory:

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     init_pwd: str
     jwt_secret: str
     jwt_algorithm: str
+    graph_path: str
 
     class Config:
         env_file = ".env"  # .env 파일 로드
